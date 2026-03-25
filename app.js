@@ -295,7 +295,7 @@ function bindEvents() {
   document.getElementById('print-btn').addEventListener('click', handlePrint);
 }
 
-// --- 印刷前バリデーション ---
+// --- 印刷 ---
 function handlePrint() {
   const warnings = [];
   if (!state.clientName.trim()) warnings.push('請求先が未入力です');
@@ -306,5 +306,20 @@ function handlePrint() {
     if (!proceed) return;
   }
 
-  window.print();
+  // スマホ対応: プレビューが非表示の場合、一時的に表示してから印刷
+  const preview = document.getElementById('invoice-preview');
+  const wasHidden = getComputedStyle(preview).display === 'none';
+
+  if (wasHidden) {
+    preview.style.display = 'block';
+    // レンダリング完了を待ってから印刷
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.print();
+        preview.style.display = '';
+      });
+    });
+  } else {
+    window.print();
+  }
 }
